@@ -1,25 +1,63 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
+title: 'Reproducible Research: Peer Assessment 1'
+output:
   html_document:
-    keep_md: true
+    keep_md: yes
+  pdf_document: default
 ---
 
 
 ## Loading and preprocessing the data
+Loading data here:
+```{r loadingdata, echo=TRUE}
+activitydata <- read.csv('activity.csv',na.strings="NA", sep=',')
+collectdates <- as.Date(activitydata$date, format='%Y-%m-%d')
 
-
+```
 
 ## What is mean total number of steps taken per day?
 
+```{r meansteps, echo=TRUE}
+library(dplyr)
 
+tabledata <- tbl_df(activitydata)
+groupdata <- group_by(tabledata, date)
+meansteps <- summarize(groupdata, sum(steps))
+hist(meansteps$sum)
+
+mstep <- mean(meansteps$sum)
+mestep <- median(meansteps$sum)
+
+```
+The mean number of steps taken per day is 'r mstep'.
+The median number of steps taken per day is 'r mestep'.
 
 ## What is the average daily activity pattern?
 
+```{r totoalsteps, echo=TRUE}
+stepsvsinterval <- aggregate(steps~ interval, tabledata, mean)
 
+with(stepsvsinterval, plot(interval, steps, type='l', xlab=interval, ylab='average steps'))
+
+```
+maxsteps <- which.max(stepsvsinterval$steps)
+maxinterval <- stepsvsinterval[maxsteps,1]
+
+At 'r maxinterval' of the 5-minute intervals, the maximum number of steps is found.
 
 ## Imputing missing values
 
+```{r missingvalues, echo=TRUE}
+missrows <- is.na(tabledata$steps)
+totalmissingvalue <- sum(missrows)
 
+newtable <- tabledata
+newtable[missrows, 1] <- mean(meansteps$sum)
+
+hist(newtable$steps)
+
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
